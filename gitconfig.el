@@ -114,6 +114,8 @@
   "Return a specific `location` variable for the given `name`"
   (unless (gitconfig-current-inside-git-repository-p)
     (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
+  (when (string= name "")
+    (user-error "Error: variable does not exist."))
   (let ((variable (shell-command-to-string
                    (format "%s config --%s --get %s"
                            gitconfig-command location name))))
