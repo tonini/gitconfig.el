@@ -31,6 +31,12 @@
 ;;    (require 'gitconfig)
 ;;    (global-gitconfig-mode)
 ;;
+;;   Example code:
+;;
+;;    (gitconfig-set-variable "local" "project.author" "Samuel Tonini")
+;;    (gitconfig-get-variable "local" "project.author")
+;;    (gitconfig-delete-variable "local" "project.author")
+;;
 ;;   Interesting variables are:
 ;;
 ;;       `<var>`
@@ -57,14 +63,14 @@
   "Name of the gitconfig output buffer.")
 
 (defun gitconfig-current-inside-git-repository-p ()
-  ""
+  "Return `t` if `default-directory` is a `git` repository"
   (let ((inside-work-tree (shell-command-to-string
                            (format "%s rev-parse --is-inside-work-tree"
                                    gitconfig-command))))
     (string= (replace-regexp-in-string "\n" "" inside-work-tree nil t) "true")))
 
 (defun gitconfig-path-to-git-repository ()
-  ""
+  "Return the absolute path of the current `git` repository"
   (let ((path-to-git-repo (shell-command-to-string
                            (format "%s rev-parse --show-toplevel"
                                    gitconfig-command))))
@@ -87,44 +93,73 @@
     variable-hash))
 
 (defun gitconfig--get-variable (location name)
-  ""
+  "Return a specific `location` variable by the given `name`"
   (let ((value (gethash name (gitconfig--get-variables location))))
     (if (not value)
-        (message (format "No %s variable in location: --%s available" name location))
+        (user-error (format "No %s variable in location --%s available" name location))
       value)))
 
+(defun gitconfig-set-variable (location name value)
+  "Set a specific `location` variable with a given `name` and `value`"
+  (unless (gitconfig-current-inside-git-repository-p)
+    (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
+  (let ((exit-status (shell-command
+                      (format "%s config --%s --replace-all %s %s"
+                              gitconfig-command location name value))))
+    (unless (= exit-status 0)
+      (user-error (format "Error: key does not contain a section: %s" name)))
+    t))
+
+(defun gitconfig-get-variable (location name)
+  "Return a specific `location` variable for the given `name`"
+  (unless (gitconfig-current-inside-git-repository-p)
+    (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
+  (let ((variable (shell-command-to-string
+                   (format "%s config --%s --get %s"
+                           gitconfig-command location name))))
+    (when (string-match "^error: " variable)
+      (user-error variable))
+    (if (string-match "\n+" variable)
+        (replace-match "" t t variable)
+      variable)))
+
+(defun gitconfig-delete-variable (location name)
+  "Delete a specific `location` variable for the given `name`"
+  (unless (gitconfig-current-inside-git-repository-p)
+    (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
+  (let ((exit-status (shell-command
+                      (format "%s config --%s --unset %s"
+                              gitconfig-command location name))))
+    (unless (= exit-status 0)
+      (user-error (format "Error: key does not contain a section: %s" name)))
+    t))
+
 (defun gitconfig--get-keys (hash)
-  "Return all keys in given `hash`."
+  "Return all keys for given `hash`."
   (let (keys)
     (maphash (lambda (key value) (setq keys (cons key keys))) hash)
     keys))
 
-(defun gitconfig-get-local-varibales ()
-  ""
+(defun gitconfig-get-local-variables ()
+  "Return all `--local` location variables as hash table"
   (gitconfig--get-variables "local"))
 
-(defun gitconfig-get-global-varibales ()
-  ""
+(defun gitconfig-get-global-variables ()
+  "Return all `--global` location variables as hash table"
   (gitconfig--get-variables "global"))
 
-(defun gitconfig-get-system-varibales ()
-  ""
+(defun gitconfig-get-system-variables ()
+  "Return all `--system` location variables as hash table"
   (gitconfig--get-variables "system"))
 
 (defun gitconfig-get-local-variable (name)
-  ""
-  (gitconfig--get-variable "local" name))
+  "Return a specific `--local` variable by the given `name`"
+  (gitconfig-get-variable "local" name))
 
 (defun gitconfig-get-global-variable (name)
-  ""
-  (gitconfig--get-variable "global" name))
+  "Return a specific `--global` variable by the given `name`"
+  (gitconfig-get-variable "global" name))
 
 (defun gitconfig-get-system-variable (name)
-  ""
-  (gitconfig--get-variable "system" name))
-
-;; gitconfig-get-variables-from-file
-;; gitconfig-get-variable-from-file
-
-;; gitconfig-get-section-variables
-;; gitconfig-get-section-variable
+  "Return a specific `--system` variable by the given `name`"
+  (gitconfig-get-variable "system" name))
