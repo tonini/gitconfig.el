@@ -89,6 +89,19 @@
                                  variable-hash)) config-string)
     variable-hash))
 
+(defun gitconfig--get-variable (location name)
+  ""
+  (let ((value (gethash name (gitconfig--get-variables location))))
+    (if (not value)
+        (message (format "No %s variable in location: --%s available" name location))
+      value)))
+
+(defun gitconfig--get-keys (hash)
+  "Return all keys in given `hash`."
+  (let (keys)
+    (maphash (lambda (key value) (setq keys (cons key keys))) hash)
+    keys))
+
 (defun gitconfig-get-local-varibales ()
   ""
   (gitconfig--get-variables "local"))
@@ -101,13 +114,6 @@
   ""
   (gitconfig--get-variables "system"))
 
-(defun gitconfig--get-variable (location name)
-  ""
-  (let ((value (gethash name (gitconfig--get-variables location))))
-    (if (not value)
-        (message (format "No %s variable in location: --%s available" name location))
-      value)))
-
 (defun gitconfig-get-local-variable (name)
   ""
   (gitconfig--get-variable "local" name))
@@ -119,12 +125,6 @@
 (defun gitconfig-get-system-variable (name)
   ""
   (gitconfig--get-variable "system" name))
-
-(defun gitconfig--get-keys (hash)
-  "Return all keys in given `hash`."
-  (let (keys)
-    (maphash (lambda (key value) (setq keys (cons key keys))) hash)
-    keys))
 
 ;; gitconfig-get-variables-from-file
 ;; gitconfig-get-variable-from-file
