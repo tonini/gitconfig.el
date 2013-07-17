@@ -112,13 +112,6 @@
                                  variable-hash)) config-string)
     variable-hash))
 
-(defun gitconfig--get-variable (location name)
-  "Return a specific `location` variable by the given `name`"
-  (let ((value (gethash name (gitconfig--get-variables location))))
-    (if (not value)
-        (user-error (format "No %s variable in location --%s available" name location))
-      value)))
-
 (defun gitconfig-set-variable (location name value)
   "Set a specific `location` variable with a given `name` and `value`"
   (unless (gitconfig-current-inside-git-repository-p)
