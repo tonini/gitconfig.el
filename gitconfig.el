@@ -39,16 +39,25 @@
 ;;
 ;;   Interesting variables are:
 ;;
-;;       `<var>`
+;;       `gitconfig-git-command`
 ;;
-;;            <description>
+;;            The shell command for <git>
 ;;
+;;       `gitconfig-buffer-name`
 ;;
-;;   Major commands are:
+;;            Name of the <git> output buffer.
 ;;
-;;        M-x <command>
+;;   Interactive functions are:
 ;;
-;;            <description>
+;;        M-x gitconfig-execute-command
+;;
+;;            Run `git config` with custom `arguments` and display it in buffer
+;;
+;;   Non-Interactive functions are:
+;;
+;;        `gitconfig-current-inside-git-repository-p`
+;;
+;;            <desc>
 ;;
 
 
@@ -60,7 +69,7 @@
   :group 'gitconfig)
 
 (defvar gitconfig-buffer-name "*GITCONFIG*"
-  "Name of the gitconfig output buffer.")
+  "Name of the git output buffer.")
 
 (defun gitconfig--get-keys (hash)
   "Return all keys for given `hash`."
@@ -100,7 +109,7 @@
     (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
   (shell-command-to-string (format "%s config %s" gitconfig-git-command arguments)))
 
-(defun gitconfig--get-variables (location)
+(defun gitconfig-get-variables (location)
   "Get all variables for the given `location` and return a hash table
    with all varibales in it."
   (let ((config-string (gitconfig--execute-command (format "--%s --list" location)))
@@ -154,15 +163,15 @@
 
 (defun gitconfig-get-local-variables ()
   "Return all `--local` location variables as hash table"
-  (gitconfig--get-variables "local"))
+  (gitconfig-get-variables "local"))
 
 (defun gitconfig-get-global-variables ()
   "Return all `--global` location variables as hash table"
-  (gitconfig--get-variables "global"))
+  (gitconfig-get-variables "global"))
 
 (defun gitconfig-get-system-variables ()
   "Return all `--system` location variables as hash table"
-  (gitconfig--get-variables "system"))
+  (gitconfig-get-variables "system"))
 
 (defun gitconfig-get-local-variable (name)
   "Return a specific `--local` variable by the given `name`"
