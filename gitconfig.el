@@ -56,9 +56,6 @@
 (defvar gitconfig-buffer-name "*GITCONFIG*"
   "Name of the gitconfig output buffer.")
 
-(defvar gitconfig--local-config-hash (make-hash-table :test 'equal)
-  "hash table with the local git config's.")
-
 (defun gitconfig-current-inside-git-repository-p ()
   ""
   (let ((inside-work-tree (shell-command-to-string
@@ -77,7 +74,7 @@
   "Get all variables for the given `location` and return a hash table
    with all varibales in it."
   (unless (gitconfig-current-inside-git-repository-p)
-    (error "fatal: Not a git repository (or any of the parent directories): .git"))
+    (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
   (let ((config-string (shell-command-to-string
                         (format "%s config --%s --list"
                                 gitconfig-command location)))
