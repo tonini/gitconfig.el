@@ -33,7 +33,7 @@
 ;;
 ;;   Example code:
 ;;
-;;    (gitconfig-set-variable "local" "project.author" "Samuel Tonini")
+;;    (gitconfig-set-variable "local" "project.author" "Samuel")
 ;;    (gitconfig-get-variable "local" "project.author")
 ;;    (gitconfig-delete-variable "local" "project.author")
 ;;
@@ -54,13 +54,32 @@
 
 ;;; Code:
 
-(defcustom gitconfig-command "git"
+(defcustom gitconfig-git-command "git"
   "The shell command for git"
   :type 'string
   :group 'gitconfig)
 
 (defvar gitconfig-buffer-name "*GITCONFIG*"
   "Name of the gitconfig output buffer.")
+
+(defun gitconfig--get-keys (hash)
+  "Return all keys for given `hash`."
+  (let (keys)
+    (maphash (lambda (key value) (setq keys (cons key keys))) hash)
+    keys))
+
+(defun gitconfig--get-buffer (name)
+  "Get and kills a buffer if exists and returns a new one."
+  (let ((buffer (get-buffer name)))
+    (when buffer (kill-buffer buffer))
+    (generate-new-buffer name)))
+
+(defun gitconfig--buffer-setup (buffer)
+  "Setup the gitconfig buffer before display."
+  (display-buffer buffer)
+  (with-current-buffer buffer
+    (setq buffer-read-only nil)
+    (local-set-key "q" 'quit-window)))
 
 (defun gitconfig-current-inside-git-repository-p ()
   "Return `t` if `default-directory` is a `git` repository"
@@ -76,14 +95,15 @@
                                    gitconfig-command))))
     (replace-regexp-in-string "\n" "" path-to-git-repo nil t)))
 
+(defun gitconfig--execute-command (arguments)
+  (unless (gitconfig-current-inside-git-repository-p)
+    (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
+  (shell-command-to-string (format "%s config %s" gitconfig-git-command arguments)))
+
 (defun gitconfig--get-variables (location)
   "Get all variables for the given `location` and return a hash table
    with all varibales in it."
-  (unless (gitconfig-current-inside-git-repository-p)
-    (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
-  (let ((config-string (shell-command-to-string
-                        (format "%s config --%s --list"
-                                gitconfig-command location)))
+  (let ((config-string (gitconfig--execute-command (format "--%s --list" location)))
         (variable-hash (make-hash-table :test 'equal)))
     (setq config-string (split-string config-string "\n"))
     (delete "" config-string)
@@ -112,13 +132,9 @@
 
 (defun gitconfig-get-variable (location name)
   "Return a specific `location` variable for the given `name`"
-  (unless (gitconfig-current-inside-git-repository-p)
-    (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
   (when (string= name "")
     (user-error "Error: variable does not exist."))
-  (let ((variable (shell-command-to-string
-                   (format "%s config --%s --get %s"
-                           gitconfig-command location name))))
+  (let ((variable (gitconfig--execute-command (format "--%s --get %s" location name))))
     (when (string-match "^error: " variable)
       (user-error variable))
     (if (string-match "\n+" variable)
@@ -130,17 +146,18 @@
   (unless (gitconfig-current-inside-git-repository-p)
     (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
   (let ((exit-status (shell-command
-                      (format "%s config --%s --unset %s"
+                      (format "%s config --%s --unset-all %s"
                               gitconfig-command location name))))
     (unless (= exit-status 0)
       (user-error (format "Error: key does not contain a section: %s" name)))
     t))
 
-(defun gitconfig--get-keys (hash)
-  "Return all keys for given `hash`."
-  (let (keys)
-    (maphash (lambda (key value) (setq keys (cons key keys))) hash)
-    keys))
+(defun gitconfig-execute-command (arguments)
+  "Run `git config` with custom `arguments` and display it in buffer"
+  (interactive "Mgit config: ")
+  (let ((buffer (gitconfig--get-buffer gitconfig-buffer-name)))
+    (shell-command (format "%s config %s" gitconfig-git-command arguments) buffer)
+    (gitconfig--buffer-setup buffer)))
 
 (defun gitconfig-get-local-variables ()
   "Return all `--local` location variables as hash table"
