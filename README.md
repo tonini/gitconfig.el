@@ -42,55 +42,55 @@ familiar with it.
 
 <table>
     <tr>
-        <th>Command (For the <code>M-x</code> prompt.)</th>
+        <th>Function</th>
         <th>Description</th>
     </tr>
     <tr>
-        <td><code>gitconfig-current-inside-git-repository-p</code></td>
+        <td><code>(gitconfig-current-inside-git-repository-p)</code></td>
         <td>Return <code>t</code> if <code>default-directory</code> is a git repository</td>
     </tr>
     <tr>
-        <td><code>gitconfig-path-to-git-repository</code></td>
+        <td><code>(gitconfig-path-to-git-repository)</code></td>
         <td>Return the absolute path of the current git repository</td>
     </tr>
     <tr>
-        <td><code>gitconfig-get-variables</code></td>
+        <td><code>(gitconfig-get-variables LOCATION)</code></td>
         <td>Get all variables for the given LOCATION and return it as a hash table</td>
     </tr>
     <tr>
-        <td><code>gitconfig-set-variable</code></td>
+        <td><code>(gitconfig-set-variable LOCATION NAME VALUE)</code></td>
         <td>Set a specific LOCATION variable with a given NAME and VALUE</td>
     </tr>
     <tr>
-        <td><code>gitconfig-get-variable</code></td>
+        <td><code>(gitconfig-get-variable LOCATION NAME)</code></td>
         <td>Return a specific LOCATION variable for the given NAME</td>
     </tr>
     <tr>
-        <td><code>gitconfig-delete-variable</code></td>
+        <td><code>(gitconfig-delete-variable LOCATION NAME)</code></td>
         <td>Delete a specific LOCATION variable for the given NAME</td>
     </tr>
     <tr>
-        <td><code>gitconfig-get-local-variables</code></td>
+        <td><code>(gitconfig-get-local-variables)</code></td>
         <td>Return all <code>git config --local --list</code> variables as hash table</td>
     </tr>
     <tr>
-        <td><code>gitconfig-get-global-variables</code></td>
+        <td><code>(gitconfig-get-global-variables)</code></td>
         <td>Return all <code>git config --global --list</code> variables as hash table</td>
     </tr>
     <tr>
-        <td><code>gitconfig-get-system-variables</code></td>
+        <td><code>(gitconfig-get-system-variables)</code></td>
         <td>Return all <code>git config --system --list</code> variables as hash table</td>
     </tr>
     <tr>
-        <td><code>gitconfig-get-local-variable</code></td>
+        <td><code>(gitconfig-get-local-variable NAME)</code></td>
         <td>Return a specific <code>git config --local --list</code> variable by the given NAME</td>
     </tr>
     <tr>
-        <td><code>gitconfig-get-global-variable</code></td>
+        <td><code>(gitconfig-get-global-variable NAME)</code></td>
         <td>Return a specific <code>git config --global --list</code> variable by the given NAME</td>
     </tr>
     <tr>
-        <td><code>gitconfig-get-system-variable</code></td>
+        <td><code>(gitconfig-get-system-variable NAME)</code></td>
         <td>Return a specific <code>git config --system --list</code> variable by the given NAME</td>
     </tr>
 </table>
