@@ -31,26 +31,73 @@
 ;;    (require 'gitconfig)
 ;;    (global-gitconfig-mode)
 ;;
-;;   Example code:
-;;
-;;    (gitconfig-set-variable "local" "project.author" "Samuel")
-;;    (gitconfig-get-variable "local" "project.author")
-;;    (gitconfig-delete-variable "local" "project.author")
-;;
 ;;   Interesting variables are:
 ;;
-;;       `<var>`
+;;       `gitconfig-git-command'
 ;;
-;;            <description>
+;;            The shell command for <git>
 ;;
+;;       `gitconfig-buffer-name'
 ;;
-;;   Major commands are:
+;;            Name of the <git> output buffer.
 ;;
-;;        M-x <command>
+;;   Interactive functions are:
 ;;
-;;            <description>
+;;        M-x gitconfig-execute-command
 ;;
-
+;;            Run <git config> with custom ARGUMENTS and display it in `gitconfig-buffer-name'
+;;
+;;   Non-Interactive functions are:
+;;
+;;        `gitconfig-current-inside-git-repository-p'
+;;
+;;            Return t if `default-directory' is a git repository
+;;
+;;        `gitconfig-path-to-git-repository'
+;;
+;;            Return the absolute path of the current git repository
+;;
+;;        `gitconfig-get-variables'
+;;
+;;            Get all variables for the given LOCATION
+;;            and return it as a hash table
+;;
+;;        `gitconfig-set-variable'
+;;
+;;            Set a specific LOCATION variable with a given NAME and VALUE
+;;
+;;        `gitconfig-get-variable'
+;;
+;;            Return a specific LOCATION variable for the given NAME
+;;
+;;        `gitconfig-delete-variable'
+;;
+;;            Delete a specific LOCATION variable for the given NAME
+;;
+;;        `gitconfig-get-local-variables'
+;;
+;;            Return all <git config --local --list> variables as hash table
+;;
+;;        `gitconfig-get-global-variables'
+;;
+;;            Return all <git config --global --list> variables as hash table
+;;
+;;        `gitconfig-get-system-variables'
+;;
+;;            Return all <git config --system --list> variables as hash table
+;;
+;;        `gitconfig-get-local-variable'
+;;
+;;            Return a specific <git config --local --list> variable by the given NAME
+;;
+;;        `gitconfig-get-global-variable'
+;;
+;;            Return a specific <git config --global --list> variable by the given NAME
+;;
+;;        `gitconfig-get-system-variable'
+;;
+;;            Return a specific <git config --system --list> variable by the given NAME
+;;
 
 ;;; Code:
 
@@ -60,10 +107,10 @@
   :group 'gitconfig)
 
 (defvar gitconfig-buffer-name "*GITCONFIG*"
-  "Name of the gitconfig output buffer.")
+  "Name of the git output buffer.")
 
 (defun gitconfig--get-keys (hash)
-  "Return all keys for given `hash`."
+  "Return all keys for given HASH"
   (let (keys)
     (maphash (lambda (key value) (setq keys (cons key keys))) hash)
     keys))
@@ -82,14 +129,14 @@
     (local-set-key "q" 'quit-window)))
 
 (defun gitconfig-current-inside-git-repository-p ()
-  "Return `t` if `default-directory` is a `git` repository"
+  "Return t if the `default-directory' is a <git> repository"
   (let ((inside-work-tree (shell-command-to-string
                            (format "%s rev-parse --is-inside-work-tree"
                                    gitconfig-command))))
     (string= (replace-regexp-in-string "\n" "" inside-work-tree nil t) "true")))
 
 (defun gitconfig-path-to-git-repository ()
-  "Return the absolute path of the current `git` repository"
+  "Return the absolute path of the current git repository"
   (let ((path-to-git-repo (shell-command-to-string
                            (format "%s rev-parse --show-toplevel"
                                    gitconfig-command))))
@@ -100,9 +147,8 @@
     (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
   (shell-command-to-string (format "%s config %s" gitconfig-git-command arguments)))
 
-(defun gitconfig--get-variables (location)
-  "Get all variables for the given `location` and return a hash table
-   with all varibales in it."
+(defun gitconfig-get-variables (location)
+  "Get all variables for the given LOCATION and return it as a hash table"
   (let ((config-string (gitconfig--execute-command (format "--%s --list" location)))
         (variable-hash (make-hash-table :test 'equal)))
     (setq config-string (split-string config-string "\n"))
@@ -113,7 +159,7 @@
     variable-hash))
 
 (defun gitconfig-set-variable (location name value)
-  "Set a specific `location` variable with a given `name` and `value`"
+  "Set a specific LOCATION variable with a given NAME and VALUE"
   (unless (gitconfig-current-inside-git-repository-p)
     (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
   (let ((exit-status (shell-command
@@ -124,7 +170,7 @@
     t))
 
 (defun gitconfig-get-variable (location name)
-  "Return a specific `location` variable for the given `name`"
+  "Return a specific LOCATION variable for the given NAME"
   (when (string= name "")
     (user-error "Error: variable does not exist."))
   (let ((variable (gitconfig--execute-command (format "--%s --get %s" location name))))
@@ -135,7 +181,7 @@
       variable)))
 
 (defun gitconfig-delete-variable (location name)
-  "Delete a specific `location` variable for the given `name`"
+  "Delete a specific LOCATION variable for the given NAME"
   (unless (gitconfig-current-inside-git-repository-p)
     (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
   (let ((exit-status (shell-command
@@ -146,32 +192,32 @@
     t))
 
 (defun gitconfig-execute-command (arguments)
-  "Run `git config` with custom `arguments` and display it in buffer"
+  "Run <git config> with custom ARGUMENTS and display it in buffer"
   (interactive "Mgit config: ")
   (let ((buffer (gitconfig--get-buffer gitconfig-buffer-name)))
     (shell-command (format "%s config %s" gitconfig-git-command arguments) buffer)
     (gitconfig--buffer-setup buffer)))
 
 (defun gitconfig-get-local-variables ()
-  "Return all `--local` location variables as hash table"
-  (gitconfig--get-variables "local"))
+  "Return all <git config --local --list> variables as hash table"
+  (gitconfig-get-variables "local"))
 
 (defun gitconfig-get-global-variables ()
-  "Return all `--global` location variables as hash table"
-  (gitconfig--get-variables "global"))
+  "Return all <git config --global --list> variables as hash table"
+  (gitconfig-get-variables "global"))
 
 (defun gitconfig-get-system-variables ()
-  "Return all `--system` location variables as hash table"
-  (gitconfig--get-variables "system"))
+  "Return all <git config --system --list> variables as hash table"
+  (gitconfig-get-variables "system"))
 
 (defun gitconfig-get-local-variable (name)
-  "Return a specific `--local` variable by the given `name`"
+  "Return a specific <git config --local --list> variable by the given NAME"
   (gitconfig-get-variable "local" name))
 
 (defun gitconfig-get-global-variable (name)
-  "Return a specific `--global` variable by the given `name`"
+  "Return a specific <git config --global --list> variable by the given NAME"
   (gitconfig-get-variable "global" name))
 
 (defun gitconfig-get-system-variable (name)
-  "Return a specific `--system` variable by the given `name`"
+  "Return a specific <git config --system --list> variable by the given NAME"
   (gitconfig-get-variable "system" name))
