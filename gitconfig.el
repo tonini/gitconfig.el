@@ -132,14 +132,14 @@
   "Return t if the `default-directory' is a <git> repository"
   (let ((inside-work-tree (shell-command-to-string
                            (format "%s rev-parse --is-inside-work-tree"
-                                   gitconfig-command))))
+                                   gitconfig-git-command))))
     (string= (replace-regexp-in-string "\n" "" inside-work-tree nil t) "true")))
 
 (defun gitconfig-path-to-git-repository ()
   "Return the absolute path of the current git repository"
   (let ((path-to-git-repo (shell-command-to-string
                            (format "%s rev-parse --show-toplevel"
-                                   gitconfig-command))))
+                                   gitconfig-git-command))))
     (replace-regexp-in-string "\n" "" path-to-git-repo nil t)))
 
 (defun gitconfig--execute-command (arguments)
@@ -164,7 +164,7 @@
     (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
   (let ((exit-status (shell-command
                       (format "%s config --%s --replace-all %s %s"
-                              gitconfig-command location name value))))
+                              gitconfig-git-command location name value))))
     (unless (= exit-status 0)
       (user-error (format "Error: key does not contain a section: %s" name)))
     t))
@@ -186,7 +186,7 @@
     (user-error "Fatal: Not a git repository (or any of the parent directories): .git"))
   (let ((exit-status (shell-command
                       (format "%s config --%s --unset-all %s"
-                              gitconfig-command location name))))
+                              gitconfig-git-command location name))))
     (unless (= exit-status 0)
       (user-error (format "Error: key does not contain a section: %s" name)))
     t))
