@@ -221,3 +221,5 @@
 (defun gitconfig-get-system-variable (name)
   "Return a specific <git config --system --list> variable by the given NAME"
   (gitconfig-get-variable "system" name))
+
+(provide 'gitconfig)
