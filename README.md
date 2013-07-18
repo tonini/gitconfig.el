@@ -9,7 +9,7 @@ Emacs lisp interface to work with git-config variables
 gitconfig.el is available on both community maintained repositories -
 [Marmalade](http://marmalade-repo.org/) and
 [MELPA](http://melpa.milkbox.net/). Just run `M-x package-install
-[RET] elixir-mix [RET]`
+[RET] gitconfig [RET]`
 inside your emacs and you're ready to go.
 
 If you're not already using ELPA, check the [emacswiki](http://www.emacswiki.org/emacs/ELPA) page to get
