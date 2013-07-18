@@ -1,12 +1,12 @@
-;;; gitconfig.el ---
+;;; gitconfig.el --- Emacs lisp interface to work with git-config variables
 ;;
 ;; Filename: gitconfig.el
-;; Description:
+;; Description: Emacs lisp interface to work with git-config variables
 ;; Author: Samuel Tonini
 ;; Maintainer: Samuel Tonini
 ;; Version: 0.0.1
 ;; URL:
-;; Keywords: git, gitconfig
+;; Keywords: git, gitconfig, git-config
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -29,7 +29,6 @@
 ;;
 ;;    (add-to-list 'load-path "~/path/to/gitconfig.el/")
 ;;    (require 'gitconfig)
-;;    (global-gitconfig-mode)
 ;;
 ;;   Interesting variables are:
 ;;
