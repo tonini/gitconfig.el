@@ -222,3 +222,6 @@
   (gitconfig-get-variable "system" name))
 
 (provide 'gitconfig)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; gitconfig.el ends here
